@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "354130654936",
+    "project_id": "booki-23d8d",
+    "storage_bucket": "booki-23d8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:354130654936:android:efe866145168e5134049ad",
+        "android_client_info": {
+          "package_name": "com.example.hall_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdForZCKZWR22rPjgFA-yp1h2U0LMlZj4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
