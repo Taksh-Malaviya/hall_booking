@@ -5,7 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:math';
 
-final _formKey = GlobalKey<FormState>();
+final formKey = GlobalKey<FormState>();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -29,16 +29,16 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  DateTime? _startDate;
-  DateTime? _endDate;
+  DateTime? startDate;
+  DateTime? endDate;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _contactController = TextEditingController();
+  CalendarFormat calendarFormat = CalendarFormat.month;
+  DateTime focusedDay = DateTime.now();
+  DateTime? selectedDay;
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController contactController = TextEditingController();
 
-  Future<bool> _isDateAvailable(DateTime start, DateTime end) async {
+  Future<bool> isDateAvailbal(DateTime start, DateTime end) async {
     QuerySnapshot bookings =
         await _firestore
             .collection('bookings')
@@ -55,7 +55,7 @@ class _BookingScreenState extends State<BookingScreen> {
     return true;
   }
 
-  String _generateRandomCode() {
+  String generateRandomCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     Random random = Random();
     return List.generate(
@@ -64,7 +64,7 @@ class _BookingScreenState extends State<BookingScreen> {
     ).join();
   }
 
-  double _calculateRent(DateTime startDate, DateTime endDate, bool isFullDay) {
+  double calculateRent(DateTime startDate, DateTime endDate, bool isFullDay) {
     int daysBetween = startDate.difference(DateTime.now()).inDays;
     int totalDays = endDate.difference(startDate).inDays + 1;
 
@@ -80,11 +80,11 @@ class _BookingScreenState extends State<BookingScreen> {
     return finalRentPerDay * totalDays;
   }
 
-  void _bookHall() async {
-    if (_startDate == null ||
-        _endDate == null ||
-        _nameController.text.isEmpty ||
-        _contactController.text.isEmpty) {
+  void bookHall() async {
+    if (startDate == null ||
+        endDate == null ||
+        nameController.text.isEmpty ||
+        contactController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill all fields and select dates.'),
@@ -93,7 +93,7 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
-    bool available = await _isDateAvailable(_startDate!, _endDate!);
+    bool available = await isDateAvailbal(startDate!, endDate!);
     if (!available) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Selected dates are already booked ❌')),
@@ -102,29 +102,29 @@ class _BookingScreenState extends State<BookingScreen> {
     }
 
     bool isFullDay =
-        _startDate!.isAtSameMomentAs(_endDate!)
-            ? await _showHalfFullDayDialog()
+        startDate!.isAtSameMomentAs(endDate!)
+            ? await showHalfFullDayDialog()
             : true;
-    double finalRent = _calculateRent(_startDate!, _endDate!, isFullDay);
-    String bookingCode = _generateRandomCode();
+    double finalRent = calculateRent(startDate!, endDate!, isFullDay);
+    String bookingCode = generateRandomCode();
 
     try {
       await _firestore.collection('bookings').add({
-        'startDate': _startDate!.toIso8601String(),
-        'endDate': _endDate!.toIso8601String(),
+        'startDate': startDate!.toIso8601String(),
+        'endDate': endDate!.toIso8601String(),
         'bookingCode': bookingCode,
-        'name': _nameController.text,
-        'contact': _contactController.text,
+        'name': nameController.text,
+        'contact': contactController.text,
         'finalRent': finalRent,
         'isFullDay': isFullDay,
       });
 
       String bookingDetails =
           "📅 Hall Booking Confirmation\n"
-          "👤 Name: ${_nameController.text}\n"
-          "📞 Contact: ${_contactController.text}\n"
-          "🗓️ Start Date: ${DateFormat('dd/MM/yyyy').format(_startDate!)}\n"
-          "🗓️ End Date: ${DateFormat('dd/MM/yyyy').format(_endDate!)}\n"
+          "👤 Name: ${nameController.text}\n"
+          "📞 Contact: ${contactController.text}\n"
+          "🗓️ Start Date: ${DateFormat('dd/MM/yyyy').format(startDate!)}\n"
+          "🗓️ End Date: ${DateFormat('dd/MM/yyyy').format(endDate!)}\n"
           "🔖 Booking Code: $bookingCode\n"
           "💰 Total Rent: ₹$finalRent\n"
           "📌 Booking Type: ${isFullDay ? 'Full Day' : 'Half Day'}\n"
@@ -142,7 +142,7 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  Future<bool> _showHalfFullDayDialog() async {
+  Future<bool> showHalfFullDayDialog() async {
     return await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {
@@ -164,7 +164,7 @@ class _BookingScreenState extends State<BookingScreen> {
             );
           },
         ) ??
-        true; // Default to full day if no selection is made
+        true;
   }
 
   @override
@@ -194,26 +194,26 @@ class _BookingScreenState extends State<BookingScreen> {
                 child: TableCalendar(
                   firstDay: DateTime.utc(2020, 1, 1),
                   lastDay: DateTime.utc(2101, 12, 31),
-                  focusedDay: _focusedDay,
-                  calendarFormat: _calendarFormat,
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                  focusedDay: focusedDay,
+                  calendarFormat: calendarFormat,
+                  selectedDayPredicate: (day) => isSameDay(selectedDay, day),
                   onDaySelected: (selectedDay, focusedDay) {
                     setState(() {
-                      _selectedDay = selectedDay;
-                      if (_startDate == null ||
-                          (_startDate != null && _endDate != null)) {
-                        _startDate = selectedDay;
-                        _endDate = null;
+                      selectedDay = selectedDay;
+                      if (startDate == null ||
+                          (startDate != null && endDate != null)) {
+                        startDate = selectedDay;
+                        endDate = null;
                       } else {
-                        _endDate =
-                            selectedDay.isAfter(_startDate!)
+                        endDate =
+                            selectedDay.isAfter(startDate!)
                                 ? selectedDay
-                                : _startDate;
+                                : startDate;
                       }
                     });
                   },
-                  rangeStartDay: _startDate,
-                  rangeEndDay: _endDate,
+                  rangeStartDay: startDate,
+                  rangeEndDay: endDate,
                   calendarStyle: CalendarStyle(
                     rangeHighlightColor: Colors.blueAccent.withOpacity(0.5),
                     selectedDecoration: BoxDecoration(
@@ -243,14 +243,14 @@ class _BookingScreenState extends State<BookingScreen> {
               child: Column(
                 children: [
                   Text(
-                    _startDate != null
-                        ? "Start Date: ${DateFormat('dd/MM/yyyy').format(_startDate!)}"
+                    startDate != null
+                        ? "Start Date: ${DateFormat('dd/MM/yyyy').format(startDate!)}"
                         : "Start Date: Not Selected",
                     style: const TextStyle(fontSize: 16, color: Colors.blue),
                   ),
                   Text(
-                    _endDate != null
-                        ? "End Date: ${DateFormat('dd/MM/yyyy').format(_endDate!)}"
+                    endDate != null
+                        ? "End Date: ${DateFormat('dd/MM/yyyy').format(endDate!)}"
                         : "End Date: Not Selected",
                     style: const TextStyle(fontSize: 16, color: Colors.blue),
                   ),
@@ -259,11 +259,11 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             const SizedBox(height: 20),
             Form(
-              key: _formKey,
+              key: formKey,
               child: Column(
                 children: [
                   TextFormField(
-                    controller: _nameController,
+                    controller: nameController,
                     keyboardType: TextInputType.name,
                     decoration: InputDecoration(
                       labelText: 'Full Name',
@@ -281,7 +281,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   const SizedBox(height: 10),
                   TextFormField(
                     maxLength: 10,
-                    controller: _contactController,
+                    controller: contactController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       labelText: 'Contact No.',
@@ -298,10 +298,10 @@ class _BookingScreenState extends State<BookingScreen> {
                   ),
                   const SizedBox(height: 20),
                   Visibility(
-                    visible: _startDate == _endDate,
+                    visible: startDate == endDate,
                     child: ElevatedButton(
                       onPressed: () {
-                        _showHalfFullDayDialog();
+                        showHalfFullDayDialog();
                       },
                       child: Text("Choose Day Type"),
                     ),
@@ -310,7 +310,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _bookHall,
+                      onPressed: bookHall,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         padding: EdgeInsets.symmetric(vertical: 14),

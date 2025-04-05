@@ -117,7 +117,6 @@ class _BookingScreenState extends State<BookingScreen> {
         'contact': _contactController.text,
         'finalRent': finalRent,
         'isFullDay': isFullDay,
-        'type': functionType,
       });
 
       String bookingDetails =
